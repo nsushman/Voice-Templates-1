@@ -1,68 +1,72 @@
-.gallery-img {
-  width: 200px;
-  height: 100px;
-  object-fit: cover;
-}
-.btn-link {
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: none;
-  color: #007bff;
-  cursor: pointer;
-}
-.dark-mode {
-  background-color: #333;
-  color: #fff;
+/* Global styles */
+body {
+    background-color: #f8f9fa;
 }
 
-/* Adjustments for Dark Mode */
+/* Dark Mode styles */
+.dark-mode {
+    background-color: #333;
+    color: #fff;
+}
+
 .dark-mode .modal-content {
-  background-color: #444; /* Dark background for modal */
-  color: #fff;
+    background-color: #444;
+    color: #fff;
 }
 
 .dark-mode .modal-header {
-  border-bottom: 1px solid #666; /* Dark border for modal header */
+    border-bottom: 1px solid #666;
 }
 
 .dark-mode .nav-link.active {
-  background-color: #666; /* Dark background for active tab */
-  color: #fff;
+    background-color: #666;
+    color: #fff;
 }
 
 .dark-mode .nav-tabs .nav-link {
-  color: #fff; /* Light text for tab links */
+    color: #fff;
 }
 
 .dark-mode .nav-tabs .nav-link.active {
-  color: #fff; /* Light text for active tab link */
+    color: #fff;
 }
 
 .dark-mode input[type="text"],
 .dark-mode input[type="email"],
 .dark-mode textarea {
-  background-color: #666; /* Dark background for text inputs */
-  color: #fff; /* Light text for text inputs */
-  border: 1px solid #555; /* Dark border for text inputs */
-  transition: background-color 0.3s ease; /* Smooth transition for background color */
+    background-color: #666;
+    color: #fff;
+    border: 1px solid #555;
+    transition: background-color 0.3s ease;
 }
 
 .dark-mode input[type="text"]::placeholder,
 .dark-mode input[type="email"]::placeholder,
 .dark-mode textarea::placeholder {
-  color: #aaa; /* Lighter placeholder text color in dark mode */
+    color: #aaa;
 }
 
 .dark-mode input[type="text"]:focus,
 .dark-mode input[type="email"]:focus,
 .dark-mode textarea:focus {
-  background-color: #555; /* Darker background on focus */
-  color: #fff; /* Light text on focus */
+    background-color: #555;
+    color: #fff;
 }
 
 .dark-mode table.table thead th {
-  color: #fff; /* Light text color for table headers in dark mode */
-  background-color: #555; /* Dark background for table headers in dark mode */
-  border-color: #444; /* Darker border color for table headers */
+    color: #fff;
+    background-color: #555;
+    border-color: #444;
+}
+
+/* Row Highlighting */
+#snippetTable tbody tr.active {
+    background-color: #f0f0f0;
+}
+
+/* Gallery Image Styling */
+.gallery-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
 }
