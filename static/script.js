@@ -103,4 +103,16 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         tableBody.appendChild(newRow);
     });
+
+    // Detect trigger phrases in the prompt textarea
+    const promptTextarea = document.getElementById('prompt');
+    promptTextarea.addEventListener('input', function() {
+        const promptText = promptTextarea.value;
+        storedSnippets.forEach(function(snippet) {
+            const triggerPhrase = snippet.triggerPhrase;
+            if (promptText.includes(triggerPhrase)) {
+                console.log("Trigger detected: " + triggerPhrase);
+            }
+        });
+    });
 });
