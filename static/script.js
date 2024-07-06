@@ -38,7 +38,11 @@ document.addEventListener('DOMContentLoaded', function() {
         newRow.innerHTML = `
             <td contenteditable="true"></td>
             <td contenteditable="true"></td>
-            <td contenteditable="true"></td>
+            <td>
+                <div class="form-check form-switch">
+                    <input class="form-check-input status-switch" type="checkbox">
+                </div>
+            </td>
             <td contenteditable="true"></td>
             <td>
                 <button class="btn btn-success btn-sm" onclick="copySnippetText(this)">Copy</button>
@@ -74,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
         rows.forEach(function(row) {
             var sectionTitle = row.cells[0].innerText.trim();
             var triggerPhrase = row.cells[1].innerText.trim();
-            var status = row.cells[2].innerText.trim();
+            var status = row.cells[2].querySelector('.status-switch').checked;
             var snippetText = row.cells[3].innerText.trim();
             snippetRows.push({
                 sectionTitle: sectionTitle,
@@ -94,7 +98,11 @@ document.addEventListener('DOMContentLoaded', function() {
         newRow.innerHTML = `
             <td contenteditable="true">${snippet.sectionTitle}</td>
             <td contenteditable="true">${snippet.triggerPhrase}</td>
-            <td contenteditable="true">${snippet.status}</td>
+            <td>
+                <div class="form-check form-switch">
+                    <input class="form-check-input status-switch" type="checkbox" ${snippet.status ? 'checked' : ''}>
+                </div>
+            </td>
             <td contenteditable="true">${snippet.snippetText}</td>
             <td>
                 <button class="btn btn-success btn-sm" onclick="copySnippetText(this)">Copy</button>
@@ -104,15 +112,57 @@ document.addEventListener('DOMContentLoaded', function() {
         tableBody.appendChild(newRow);
     });
 
-    // Detect trigger phrases in the prompt textarea
+    // Set to keep track of detected trigger phrases
+    const detectedTriggers = new Set();
+
+    // Detect trigger phrases in the prompt textarea and append formatted snippet text
     const promptTextarea = document.getElementById('prompt');
     promptTextarea.addEventListener('input', function() {
         const promptText = promptTextarea.value;
-        storedSnippets.forEach(function(snippet) {
-            const triggerPhrase = snippet.triggerPhrase;
-            if (promptText.includes(triggerPhrase)) {
-                console.log("Trigger detected: " + triggerPhrase);
-            }
-        });
+        // Check if prompt ends with a period
+        if (promptText.endsWith('.')) {
+            storedSnippets.forEach(function(snippet) {
+                const triggerPhrase = snippet.triggerPhrase;
+                const snippetText = snippet.snippetText;
+                if (promptText.includes(triggerPhrase) && !detectedTriggers.has(triggerPhrase)) {
+                    appendFormattedSnippetToPrompt(snippet);
+                    detectedTriggers.add(triggerPhrase); // Mark as detected
+                }
+            });
+        }
     });
+
+    // Function to append formatted snippet text to the prompt textarea
+    function appendFormattedSnippetToPrompt(snippet) {
+        const formattedSnippet = `\n${snippet.sectionTitle}\n${snippet.snippetText}`;
+        promptTextarea.value += formattedSnippet;
+    }
+
+
+
+    // Toggle "In Chair mode"
+    const chairModeToggle = document.getElementById('chairModeToggle');
+    chairModeToggle.addEventListener('change', function() {
+        // Add functionality for chair mode toggle if needed
+    });
+
+    // Template actions
+    window.clearTemplate = function() {
+        document.getElementById('templateTextarea').value = '';
+    }
+
+    window.saveTemplate = function() {
+        const templateContent = templateTextarea.value;
+        localStorage.setItem('templateContent', templateContent);
+        alert('Template saved!');
+    }
+
+    function loadTemplate() {
+        const savedTemplateContent = localStorage.getItem('templateContent');
+        if (savedTemplateContent !== null) {
+            templateTextarea.value = savedTemplateContent;
+        }
+    }
+
+    loadTemplate();
 });
