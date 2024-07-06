@@ -70,3 +70,27 @@ body {
     height: auto;
     object-fit: cover;
 }
+
+/* Snippet Table Row Styles */
+.dark-mode #snippetTable tbody tr {
+    color: #fff;
+}
+
+.dark-mode #snippetTable tbody tr td {
+    color: #fff;
+}
+
+.dark-mode #snippetTable tbody tr td[contenteditable="true"] {
+    background-color: #555;
+    color: #fff;
+}
+
+/* Adjust Snippet Text Column Width */
+#snippetTable td:nth-child(4) {
+    width: 300%;
+}
+
+/* Make Snippet Library Modal Wider */
+.modal-dialog {
+    max-width: 80%;
+}
