@@ -138,8 +138,6 @@ document.addEventListener('DOMContentLoaded', function() {
         promptTextarea.value += formattedSnippet;
     }
 
-
-
     // Toggle "In Chair mode"
     const chairModeToggle = document.getElementById('chairModeToggle');
     chairModeToggle.addEventListener('change', function() {
@@ -165,4 +163,176 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     loadTemplate();
+
+    // Recording functionality
+    let mediaRecorder;
+    let audioChunks = [];
+    const recordButton = document.getElementById('recordButton');
+    const pauseButton = document.createElement('button');
+    pauseButton.textContent = 'Pause';
+    pauseButton.classList.add('btn', 'btn-warning');
+    pauseButton.style.display = 'none';
+    recordButton.after(pauseButton);
+
+    const recordingPanel = document.getElementById('recordingPanel');
+    const recordingTimer = document.getElementById('recordingTimer');
+    let timerInterval;
+    let isPaused = false;
+    let elapsedTime = 0;
+    let stream; // Variable to hold the stream globally
+    let animationFrameId; // Variable to hold the requestAnimationFrame id
+
+    recordButton.addEventListener('click', function() {
+        if (recordButton.classList.contains('recording')) {
+            stopRecording();
+        } else {
+            startRecording();
+        }
+    });
+
+    pauseButton.addEventListener('click', function() {
+        if (isPaused) {
+            resumeRecording();
+        } else {
+            pauseRecording();
+        }
+    });
+
+    function startRecording() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(str => {
+                stream = str; // Store the stream globally
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+                audioChunks = [];
+
+                mediaRecorder.addEventListener('dataavailable', event => {
+                    audioChunks.push(event.data);
+                });
+
+                mediaRecorder.addEventListener('stop', () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                });
+
+                recordButton.classList.add('recording');
+                recordButton.textContent = 'Stop';
+                pauseButton.style.display = 'inline-block';
+                recordingPanel.style.display = 'block';
+                startTimer();
+
+                visualize();
+            })
+            .catch(error => {
+                console.error('Error accessing microphone:', error);
+            });
+    }
+
+    function stopRecording() {
+        mediaRecorder.stop();
+        stream.getTracks().forEach(track => track.stop()); // Stop all tracks in the stream
+        recordButton.classList.remove('recording');
+        recordButton.textContent = 'Record';
+        pauseButton.style.display = 'none';
+        recordingPanel.style.display = 'none';
+        stopTimer();
+        isPaused = false;
+        elapsedTime = 0;
+        cancelAnimationFrame(animationFrameId); // Stop the visualizer animation
+    }
+
+    function pauseRecording() {
+        mediaRecorder.pause();
+        isPaused = true;
+        pauseButton.textContent = 'Resume';
+        stopTimer();
+        cancelAnimationFrame(animationFrameId); // Stop the visualizer animation
+    }
+
+    function resumeRecording() {
+        mediaRecorder.resume();
+        isPaused = false;
+        pauseButton.textContent = 'Pause';
+        startTimer();
+        visualize(); // Restart the visualizer animation
+    }
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            elapsedTime++;
+            recordingTimer.textContent = formatTime(elapsedTime);
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
+
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+    }
+
+    function visualize() {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 2048;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        const canvas = document.getElementById('visualizer');
+        const canvasCtx = canvas.getContext('2d');
+
+        function draw() {
+            if (mediaRecorder.state === 'inactive' || isPaused) {
+                cancelAnimationFrame(animationFrameId); // Stop animation if paused or recording stopped
+                return;
+            }
+
+            const WIDTH = canvas.width;
+            const HEIGHT = canvas.height;
+
+            analyser.getByteTimeDomainData(dataArray);
+
+            canvasCtx.fillStyle = '#f3f3f3';
+            canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = '#000';
+
+            canvasCtx.beginPath();
+
+            const sliceWidth = WIDTH * 1.0 / bufferLength;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                const v = dataArray[i] / 128.0;
+                const y = v * HEIGHT / 2;
+
+                if (i === 0) {
+                    canvasCtx.moveTo(x, y);
+                } else {
+                    canvasCtx.lineTo(x, y);
+                }
+
+                x += sliceWidth;
+            }
+
+            canvasCtx.lineTo(canvas.width, canvas.height / 2);
+            canvasCtx.stroke();
+
+            animationFrameId = requestAnimationFrame(draw); // Request next frame for animation
+        }
+
+        // Connect the analyser to the media stream source
+        audioCtx.createMediaStreamSource(stream).connect(analyser);
+
+        // Start the initial animation
+        draw();
+    }
+
+
 });

@@ -20,7 +20,7 @@
             </div>
         </div>
         <div class="row">
-            <!-- Section 1: Left Side -->
+            <!-- Section 1:Left Side -->
             <div class="col-md-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <h1>Transcript</h1>
@@ -33,9 +33,13 @@
                 <textarea id="prompt" class="form-control" rows="4" placeholder="Enter your prompt here..."></textarea>
                 <div class="mt-3">
                     <button class="btn btn-primary" onclick="generate()">Summarize</button>
-                    <button class="btn btn-secondary">Record</button>
+                    <button id="recordButton" class="btn btn-danger">Record</button>
                     <button class="btn btn-secondary">Audit</button>
                     <button class="btn btn-secondary" data-toggle="modal" data-target="#snippetsModal">Snippets</button>
+                </div>
+                <div id="recordingPanel" class="mt-3" style="display: none;">
+                    <canvas id="visualizer" class="visualizer"></canvas>
+                    <div id="recordingTimer">00:00</div>
                 </div>
             </div>
 
