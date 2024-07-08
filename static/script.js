@@ -336,50 +336,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Function to handle Generate button click
+    document.getElementById('generateButton').addEventListener('click', function() {
+        const transcriptText = document.getElementById('transcript').value.trim();
 
-    // Function to call API and handle response
-    function generate() {
-      const transcriptElement = document.getElementById('transcript');
-      if (!transcriptElement) {
-        console.error('Error: Transcript element with id "transcript" not found.');
-        return;  // Exit the function if element is missing
-      }
+        // Check if transcript text is less than 100 characters
+        if (transcriptText.length < 100) {
+            alert('Prompt should be at least 100 characters long');
+            return;
+        }
 
-      const transcript = transcriptElement.value;
-
-      fetch('/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ transcript: transcript }),
-      })
+        // Make API call to Flask endpoint
+        fetch('/generate-prompt', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt: transcriptText })
+        })
         .then(response => {
-          if (!response.ok) {
-            throw new Error(`Network response was not ok. Status: ${response.status}`);
-          }
-          return response.json();
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(`HTTP error! Status: ${response.status}, Error: ${err.error}, Code: ${err.error_code}`);
+                });
+            }
+            return response.json();
         })
         .then(data => {
-          const responseElement = document.getElementById('response');
-          if (!responseElement) {
-            console.error('Error: Response element with id "response" not found.');
-          } else {
-            responseElement.value = data.content || 'No response received';
-          }
+            if (data.error) {
+                throw new Error(`OpenAI API error: ${data.error}`);
+            }
+            document.getElementById('txtNotes').value = data.generated_text || '';
         })
         .catch(error => {
-          if (error instanceof TypeError) {
-            console.error('Error: Likely a data parsing issue. Check the response format.');
-          } else {
-            console.error('Error:', error);
-          }
+            console.error('Error:', error.message);
+            alert(`Error generating prompt: ${error.message}`);
         });
-    }
+    });
 
-    // Generate button click event listener
-    const generateButton = document.getElementById('generateButton');
-    if (generateButton) {
-        generateButton.addEventListener('click', generate);
-    }
+
+
 });
